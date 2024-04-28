@@ -1,9 +1,8 @@
 //! Process management syscalls
 use crate::{
     config::MAX_SYSCALL_NUM,
-    task::{
-        change_program_brk, exit_current_and_run_next, suspend_current_and_run_next, TaskStatus,
-    },
+    task::{change_program_brk, exit_current_and_run_next, get_current_task_block, suspend_current_and_run_next, TaskStatus},
+    timer::{get_time_ms, get_time_us}
 };
 
 #[repr(C)]

@@ -71,6 +71,29 @@ lazy_static! {
 }
 
 impl TaskManager {
+    fn get_current_task_id(&self) -> usize {
+        let inner = self.inner.exclusive_access();
+        inner.current_task
+    }
+
+    fn get_current_task_block(&self) -> TaskControlBlock {
+        self.get_task_block(self.get_current_task_id())
+    }
+
+    fn get_task_block(&self, task_id: usize) -> TaskControlBlock {
+        let inner = self.inner.exclusive_access();
+        inner.tasks[task_id]
+    }
+
+    fn set_current_task_block(&self, block: TaskControlBlock){
+        self.set_task_block(self.get_current_task_id(), block)
+    }
+
+    fn set_task_block(&self, task_id: usize, block: TaskControlBlock) {
+        let mut inner = self.inner.exclusive_access();
+        inner.tasks[task_id] = block;
+    }
+
     /// Run the first task in task list.
     ///
     /// Generally, the first task in task list is an idle task (we call it zero process later).
