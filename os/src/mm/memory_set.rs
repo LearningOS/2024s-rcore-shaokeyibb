@@ -69,16 +69,17 @@ impl MemorySet {
     pub fn find_area_include_range(&self, range: VPNRange) -> Option<&MapArea> {
         self.areas
             .iter()
-            .find(|area| area.vpn_range.contains_all(range))
+            .find(|area| area.vpn_range.contains_any(range))
     }
     /// Find MapArea include in the virtual address range, and unmap them
     pub fn unmap_area_include_range(&mut self, range: VPNRange) -> isize {
-        let area = self
+        let area_idx = self
             .areas
-            .iter_mut()
-            .find(|area| area.vpn_range.contains_all(range));
-        if let Some(area) = area {
-            area.unmap(&mut self.page_table);
+            .iter()
+            .position(|area| area.vpn_range.contains_all(range));
+        if let Some(idx) = area_idx {
+            self.areas[idx].unmap(&mut self.page_table);
+            self.areas.remove(idx);
             0
         } else {
             -1

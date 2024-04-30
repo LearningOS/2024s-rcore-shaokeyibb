@@ -137,7 +137,7 @@ pub fn sys_mmap(start: usize, len: usize, port: usize) -> isize {
         // [start, start + len) 中存在已经被映射的页
         if inner
             .memory_set
-            .find_area_include_range(VPNRange::new(start_va.into(), end_va.ceil().into())) // start_va floor by default
+            .find_area_include_range(VPNRange::new(start_va.floor().into(), end_va.ceil().into()))
             .is_some()
         {
             res = -1;
@@ -155,6 +155,11 @@ pub fn sys_mmap(start: usize, len: usize, port: usize) -> isize {
 pub fn sys_munmap(start: usize, len: usize) -> isize {
     trace!("kernel: sys_munmap");
     let start_va: VirtAddr = start.into();
+
+    if !start_va.aligned() {
+        return -1;
+    }
+
     let end_va: VirtAddr = VirtAddr::from(start + len).ceil().into();
 
     let mut res = 0;
@@ -162,7 +167,7 @@ pub fn sys_munmap(start: usize, len: usize) -> isize {
     use_current_task_inner(|inner| {
         res = inner
             .memory_set
-            .unmap_area_include_range(VPNRange::new(start_va.into(), end_va.ceil().into()))
+            .unmap_area_include_range(VPNRange::new(start_va.floor().into(), end_va.ceil().into()))
     });
 
     res

@@ -243,6 +243,11 @@ where
     pub fn get_end(&self) -> T {
         self.r
     }
+
+    pub fn contains_any(&self, other: SimpleRange<T>) -> bool {
+        self.l < other.r && self.r > other.l
+    }
+
     pub fn contains_all(&self, other: SimpleRange<T>) -> bool {
         self.l <= other.l && self.r >= other.r
     }
