@@ -71,29 +71,6 @@ lazy_static! {
 }
 
 impl TaskManager {
-    fn get_current_task_id(&self) -> usize {
-        let inner = self.inner.exclusive_access();
-        inner.current_task
-    }
-
-    fn get_current_task_block(&self) -> TaskControlBlock {
-        self.get_task_block(self.get_current_task_id())
-    }
-
-    fn get_task_block(&self, task_id: usize) -> TaskControlBlock {
-        let inner = self.inner.exclusive_access();
-        inner.tasks[task_id]
-    }
-
-    fn set_current_task_block(&self, block: TaskControlBlock){
-        self.set_task_block(self.get_current_task_id(), block)
-    }
-
-    fn set_task_block(&self, task_id: usize, block: TaskControlBlock) {
-        let mut inner = self.inner.exclusive_access();
-        inner.tasks[task_id] = block;
-    }
-
     /// Run the first task in task list.
     ///
     /// Generally, the first task in task list is an idle task (we call it zero process later).
@@ -224,4 +201,11 @@ pub fn current_trap_cx() -> &'static mut TrapContext {
 /// Change the current 'Running' task's program break
 pub fn change_program_brk(size: i32) -> Option<usize> {
     TASK_MANAGER.change_current_program_brk(size)
+}
+
+/// Use the current task's inner fields.
+pub fn use_current_task_inner(f: impl FnOnce(&mut TaskControlBlock)) {
+    let mut inner = TASK_MANAGER.inner.exclusive_access();
+    let current = inner.current_task;
+    f(&mut inner.tasks[current]);
 }
